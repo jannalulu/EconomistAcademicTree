@@ -296,10 +296,10 @@ Clive_Granger,Norbert_Wiener
 Clive_Granger,David_Hendry
 Clive_Granger,John_Denis_Sargan
 Alexandre_Mas,Andreu_Mas-Colell
-Edward_Atkinson_(activist),Richard_Cobden
-Edward_Atkinson_(activist),Frédéric_Bastiat
-Edward_Atkinson_(activist),Adam_Smith
-Edward_Atkinson_(activist),John_Bright
+Edward_Atkinson,Richard_Cobden
+Edward_Atkinson,Frédéric_Bastiat
+Edward_Atkinson,Adam_Smith
+Edward_Atkinson,John_Bright
 Edward_C._Harwood,Gottfried_Haberler
 Edward_C._Harwood,William_Harold_Hutt
 Edward_C._Harwood,William_James
@@ -825,9 +825,9 @@ Duncan_K._Foley,Michel_Aglietta
 E._Roy_Weintraub,Sidney_Weintraub
 E._Roy_Weintraub,Herbert_Wilf
 E._Roy_Weintraub,Lawrence_Klein
-Ed_Crane_(politician),Friedrich_Hayek
-Ed_Crane_(politician),Ludwig_von_Mises
-Ed_Crane_(politician),Milton_Friedman
+Ed_Crane,Friedrich_Hayek
+Ed_Crane,Ludwig_von_Mises
+Ed_Crane,Milton_Friedman
 Edmond_Malinvaud,Maurice_Allais
 Edmond_Malinvaud,Léon_Walras
 Edmund_Phelps,John_Rawls
@@ -838,7 +838,7 @@ Eric_Ghysels,Thomas_J._Sargent
 Eric_Ghysels,Halbert_White
 Eric_Ghysels,Lars_Peter_Hansen
 Eric_Ghysels,Christopher_Sims
-Eric_Ghysels,Clive_W._J._Granger
+Eric_Ghysels,Clive_Granger
 Eric_Ghysels,Robert_Engle
 Erik_Lindahl,Knut_Wicksell
 Erik_S._Reinert,Friedrich_List
@@ -1169,8 +1169,6 @@ Kevin_M._Murphy,Gary_Becker
 Kevin_M._Murphy,Armen_Alchian
 Kevin_M._Murphy,Finis_Welch
 Kevin_M._Murphy,Robert_Topel
-Khurshid_Ahmad_(scholar),Perspectives_on_capitalism
-Khurshid_Ahmad_(scholar),Capitalism
 L._Randall_Wray,Hyman_Minsky
 Larry_J._Sechrest,Friedrich_Hayek
 Larry_J._Sechrest,Murray_Rothbard

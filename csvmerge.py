@@ -11,4 +11,4 @@ merged_df = pd.concat([df1, df2], ignore_index=True)
 merged_df = merged_df.drop_duplicates()
 
 # Save the merged DataFrame to a new CSV file
-merged_df.to_csv('merged_csv.csv', index=False)
+merged_df.to_csv('merged20240308.csv', index=False)
