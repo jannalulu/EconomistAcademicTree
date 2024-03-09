@@ -10,17 +10,16 @@ merged_df = pd.concat([df1, df2], ignore_index=True)
 # Remove duplicates (based on all columns)
 merged_df = merged_df.drop_duplicates()
 
-# Count the occurrences of each economist
-economist_counts = merged_df['economist'].value_counts()
-influenced_counts = merged_df['influencedBy'].value_counts()
+# Count the occurrences of each economist and influenced person
+counts_df = pd.concat([merged_df['economist'], merged_df['influencedBy']], axis=1)
+counts_df.columns = ['name', 'influenced_name']
+counts_df = counts_df.stack().reset_index(level=1, drop=True).rename('name').to_frame()
+counts_df['count'] = 1
+counts_df = counts_df.groupby('name').sum()
 
-# Merge the counts into a single DataFrame
-counts_df = pd.concat([economist_counts, influenced_counts], axis=1)
-counts_df.columns = ['economist_count', 'influenced_count']
-counts_df = counts_df.fillna(0).astype(int)
-
-# Filter out economists who appear >= 4 times
-filtered_df = merged_df[merged_df['economist'].isin(counts_df[(counts_df['economist_count'] > 4) | (counts_df['influenced_count'] > 4)].index)]
+# Filter out economists and influenced persons who appear < 10 times
+filtered_names = counts_df[counts_df['count'] >= 10].index
+filtered_df = merged_df[merged_df['economist'].isin(filtered_names) | merged_df['influencedBy'].isin(filtered_names)]
 
 # Save the merged and filtered DataFrame to a new CSV file
-merged_df.to_csv('merged_filtered4_csv.csv', index=False)
+filtered_df.to_csv('merged_filtered4_csv.csv', index=False)
