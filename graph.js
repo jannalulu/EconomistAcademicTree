@@ -63,9 +63,10 @@ function createD3Graph(graph, parentWidth, parentHeight) {
         .selectAll("circle")
         .data(graph.nodes)
         .join("circle")
-        .attr("r", 5)
-        .attr("fill", "#69b3a2")
-        .call(drag(simulation));
+        .attr("r", 8)  // Increased size
+        .attr("fill", "#ADD8E6")  // Light blue color
+        .call(drag(simulation))
+        .on("click", (event, d) => setSelectedNode(d, nodes, links, labels));
 
     // Add labels to nodes
     const labels = g.append("g")
@@ -73,14 +74,15 @@ function createD3Graph(graph, parentWidth, parentHeight) {
         .data(graph.nodes)
         .join("text")
         .text(d => d.name)
-        .attr("font-size", "8px")
-        .attr("dx", 8)
+        .attr("font-size", "12px")  // Increased font size
+        .attr("font-family", "Arial, Helvetica, sans-serif")  // Sans-serif font
+        .attr("dx", 10)
         .attr("dy", ".35em");
 
     // Create simulation
     simulation = d3.forceSimulation(graph.nodes)
         .force("link", d3.forceLink(graph.links).id(d => d.id).distance(50))
-        .force("charge", d3.forceManyBody().strength(-50))
+        .force("charge", d3.forceManyBody().strength(-100))
         .force("center", d3.forceCenter(parentWidth / 2, parentHeight / 2))
         .on("tick", ticked);
 
@@ -96,36 +98,119 @@ function createD3Graph(graph, parentWidth, parentHeight) {
             .attr("cy", d => d.y);
 
         labels
-            .attr("x", d => d.x)
+            .attr("x", d => d.x + 8)
             .attr("y", d => d.y);
     }
-
-    // Add click event to nodes
-    nodes.on("click", (event, d) => {
-        setSelectedNode(d, nodes, links);
-    });
 
     // Add search functionality
     d3.select("#search").on("input", function() {
         const searchTerm = this.value.toLowerCase();
-        nodes.attr("fill", d => d.name.toLowerCase().includes(searchTerm) ? "#ff0000" : "#69b3a2");
-        labels.attr("font-weight", d => d.name.toLowerCase().includes(searchTerm) ? "bold" : "normal");
+        if (searchTerm) {
+            highlightConnectedNodes(searchTerm, graph, nodes, links, labels, zoom, g, svg, parentWidth, parentHeight);
+        } else {
+            resetGraph(nodes, links, labels);
+        }
+    });
+
+    // Add click event to reset graph when clicking on empty space
+    svg.on("click", function(event) {
+        if (event.target.tagName !== "circle") {
+            resetGraph(nodes, links, labels);
+            selectedNode = null;
+        }
     });
 }
 
-function setSelectedNode(node, allNodes, allLinks) {
+function highlightConnectedNodes(searchTerm, graph, nodes, links, labels, zoom, g, svg, parentWidth, parentHeight) {
+    // Find nodes that match the search term
+    const matchedNodes = graph.nodes.filter(n => n.name.toLowerCase().includes(searchTerm));
+    
+    if (matchedNodes.length === 0) {
+        resetGraph(nodes, links, labels);
+        return;
+    }
+
+    // Find all connected nodes
+    const connectedNodes = new Set();
+    matchedNodes.forEach(node => {
+        connectedNodes.add(node.id);
+        graph.links.forEach(link => {
+            if (link.source.id === node.id) connectedNodes.add(link.target.id);
+            if (link.target.id === node.id) connectedNodes.add(link.source.id);
+        });
+    });
+
+    // Highlight nodes and links, fade others
+    nodes.attr("fill", d => connectedNodes.has(d.id) ? "#00FF00" : "#808080")
+         .attr("opacity", d => connectedNodes.has(d.id) ? 1 : 0.1);
+    links.attr("stroke", d => connectedNodes.has(d.source.id) && connectedNodes.has(d.target.id) ? "#00FF00" : "#999")
+         .attr("opacity", d => connectedNodes.has(d.source.id) && connectedNodes.has(d.target.id) ? 1 : 0.1);
+    labels.attr("font-weight", d => connectedNodes.has(d.id) ? "bold" : "normal")
+          .attr("opacity", d => connectedNodes.has(d.id) ? 1 : 0.1);
+
+    // Zoom to fit highlighted nodes
+    const highlightedNodes = nodes.filter(d => connectedNodes.has(d.id));
+    if (highlightedNodes.size() > 0) {
+        const bounds = {
+            x1: d3.min(highlightedNodes.data(), d => d.x),
+            y1: d3.min(highlightedNodes.data(), d => d.y),
+            x2: d3.max(highlightedNodes.data(), d => d.x),
+            y2: d3.max(highlightedNodes.data(), d => d.y)
+        };
+
+        const padding = 50;
+        const dx = bounds.x2 - bounds.x1 + padding * 2,
+              dy = bounds.y2 - bounds.y1 + padding * 2,
+              x = (bounds.x1 + bounds.x2) / 2,
+              y = (bounds.y1 + bounds.y2) / 2,
+              scale = Math.min(8, 0.9 / Math.max(dx / parentWidth, dy / parentHeight)),
+              translate = [parentWidth / 2 - scale * x, parentHeight / 2 - scale * y];
+
+        svg.transition()
+            .duration(750)
+            .call(zoom.transform, d3.zoomIdentity.translate(translate[0], translate[1]).scale(scale));
+    }
+}
+
+function resetGraph(nodes, links, labels) {
+    nodes.attr("fill", "#ADD8E6")  // Reset to light blue
+         .attr("opacity", 1);
+    links.attr("stroke", "#999")
+         .attr("opacity", 1);
+    labels.attr("font-weight", "normal")
+          .attr("opacity", 1);
+}
+
+function setSelectedNode(node, allNodes, allLinks, labels) {
     if (selectedNode === node) return;
     
-    allNodes.attr("fill", "#69b3a2");
-    allLinks.attr("stroke", "#999");
+    const connectedNodes = new Set([node.id]);
+    allLinks.each(function(d) {
+        if (d.source.id === node.id) connectedNodes.add(d.target.id);
+        if (d.target.id === node.id) connectedNodes.add(d.source.id);
+    });
 
-    allNodes.filter(n => n.id === node.id).attr("fill", "#ff0000");
-    allLinks.filter(l => l.source.id === node.id || l.target.id === node.id).attr("stroke", "#ff0000");
+    allNodes.attr("fill", d => connectedNodes.has(d.id) ? "#00FF00" : "#ADD8E6")
+            .attr("opacity", d => connectedNodes.has(d.id) ? 1 : 0.1);
+    allLinks.attr("stroke", d => connectedNodes.has(d.source.id) && connectedNodes.has(d.target.id) ? "#00FF00" : "#999")
+            .attr("opacity", d => connectedNodes.has(d.source.id) && connectedNodes.has(d.target.id) ? 1 : 0.1);
+    labels.attr("font-weight", d => connectedNodes.has(d.id) ? "bold" : "normal")
+          .attr("opacity", d => connectedNodes.has(d.id) ? 1 : 0.1);
 
     selectedNode = node;
 
-    // You can add more functionality here, like showing node details
     console.log("Selected node:", node.name);
+}
+
+function applyForceToLabels(nodes, labels) {
+    const labelForce = d3.forceSimulation(nodes)
+        .force('collision', d3.forceCollide().radius(10))
+        .on('tick', () => {
+            labels.attr('x', d => d.x + 8)
+                  .attr('y', d => d.y);
+        });
+
+    return labelForce;
 }
 
 function drag(simulation) {
