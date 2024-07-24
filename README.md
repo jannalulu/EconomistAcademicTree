@@ -1,3 +1,3 @@
 <p> Data from dbpedia </p>
-<p> Visualization with Gephi </p>
-<p> Final form of this project will be hosted online, searchable and interactive </p>
+<p> Visualization with Gephi in PDFs </p>
+<p> Searchable, interactive version (WIP) at <ahref> https://econtree.netlify.app/</ahref></p>
