@@ -4,6 +4,9 @@ let links = null;
 let nodes = null;
 let simulation = null;
 let selectedNode = null;
+let svg = null;
+let g = null;
+let zoom = null;
 
 let worker = new Worker('dataworker.js');
 
@@ -20,17 +23,17 @@ function loadGraphData(url) {
 }
 
 function createD3Graph(graph, parentWidth, parentHeight) {
-    const svg = d3.select('svg')
+    svg = d3.select('svg')
         .attr('width', parentWidth)
         .attr('height', parentHeight);
 
     // Remove any previous graphs
     svg.selectAll('*').remove();
 
-    const g = svg.append('g');
+    g = svg.append('g');
 
     // Create zoom behavior
-    const zoom = d3.zoom()
+    zoom = d3.zoom()
         .scaleExtent([0.1, 4])
         .on('zoom', (event) => {
             g.attr('transform', event.transform);
@@ -110,9 +113,10 @@ function createD3Graph(graph, parentWidth, parentHeight) {
 
     // Add click event to reset graph when clicking on empty space
     svg.on("click", function(event) {
-        if (event.target.tagName !== "circle") {
+        if (event.target === this) {
             resetGraph(nodes, links, labels);
             selectedNode = null;
+            resetZoom();
         }
     });
 
@@ -131,7 +135,7 @@ function createD3Graph(graph, parentWidth, parentHeight) {
 
 function highlightNodes(searchTerm, allNodes, nodes, links, labels) {
     const matchedNodes = allNodes.filter(n => n.name.toLowerCase().includes(searchTerm));
-    
+
     if (matchedNodes.length === 0) {
         resetGraph(nodes, links, labels);
         return;
@@ -155,6 +159,11 @@ function highlightNodes(searchTerm, allNodes, nodes, links, labels) {
          .attr("opacity", d => connectedLinks.has(d) ? 1 : 0.1);
 
     labels.attr("opacity", d => connectedNodes.has(d.id) ? 1 : 0.1);
+
+    // Zoom to the first matched node
+    if (matchedNodes.length > 0) {
+        zoomToNode(matchedNodes[0]);
+    }
 }
 
 function resetGraph(nodes, links, labels) {
@@ -189,6 +198,25 @@ function setSelectedNode(node) {
 
     selectedNode = node;
     console.log("Selected node:", node.name);
+
+    // Zoom to the selected node
+    zoomToNode(node);
+}
+
+function zoomToNode(node) {
+    const scale = 2;
+    const x = -node.x * scale + svg.attr("width") / 2;
+    const y = -node.y * scale + svg.attr("height") / 2;
+
+    svg.transition()
+        .duration(750)
+        .call(zoom.transform, d3.zoomIdentity.translate(x, y).scale(scale));
+}
+
+function resetZoom() {
+    svg.transition()
+        .duration(750)
+        .call(zoom.transform, d3.zoomIdentity);
 }
 
 function drag(simulation) {
