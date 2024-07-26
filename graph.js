@@ -1,4 +1,3 @@
-// Use d3v7 as it's the latest stable version
 const d3 = window.d3;
 
 let links = null;
@@ -6,29 +5,18 @@ let nodes = null;
 let simulation = null;
 let selectedNode = null;
 
-function loadGraphData(callback) {
-    d3.csv("merged20240308.csv").then(function(data) {
-        const nodes = new Set();
-        const links = [];
+let worker = new Worker('dataworker.js');
 
-        data.forEach(function(row) {
-            nodes.add(row.influencedBy);
-            nodes.add(row.economist);
-            links.push({
-                source: row.influencedBy,
-                target: row.economist
-            });
-        });
+worker.onmessage = function(event) {
+    if (event.data.type === 'graphData') {
+        createD3Graph(event.data.graph, window.innerWidth, window.innerHeight);
+    } else if (event.data.type === 'error') {
+        console.error(event.data.message);
+    }
+};
 
-        const graph = {
-            nodes: Array.from(nodes).map(name => ({ id: name, name: name })),
-            links: links
-        };
-
-        callback(graph);
-    }).catch(function(error) {
-        console.log("Error loading the CSV file:", error);
-    });
+function loadGraphData(url) {
+    worker.postMessage({ type: 'loadData', url: url });
 }
 
 function createD3Graph(graph, parentWidth, parentHeight) {
@@ -51,14 +39,8 @@ function createD3Graph(graph, parentWidth, parentHeight) {
     svg.call(zoom);
 
     // Calculate node sizes based on connections
-    const nodeConnections = {};
-    graph.links.forEach(link => {
-        nodeConnections[link.source] = (nodeConnections[link.source] || 0) + 1;
-        nodeConnections[link.target] = (nodeConnections[link.target] || 0) + 1;
-    });
-
     const nodeSize = d3.scaleLinear()
-        .domain([0, d3.max(Object.values(nodeConnections))])
+        .domain([0, d3.max(graph.nodes, d => d.connections)])
         .range([5, 20]);
 
     // Create links
@@ -75,10 +57,10 @@ function createD3Graph(graph, parentWidth, parentHeight) {
         .selectAll("circle")
         .data(graph.nodes)
         .join("circle")
-        .attr("r", d => nodeSize(nodeConnections[d.id] || 0))
+        .attr("r", d => nodeSize(d.connections))
         .attr("fill", "#ADD8E6")  // Light blue color
         .call(drag(simulation))
-        .on("click", (event, d) => setSelectedNode(d, nodes, links, labels));
+        .on("click", (event, d) => setSelectedNode(d));
 
     // Add labels to nodes
     const labels = g.append("g")
@@ -97,7 +79,7 @@ function createD3Graph(graph, parentWidth, parentHeight) {
         .force("link", d3.forceLink(graph.links).id(d => d.id).distance(100))
         .force("charge", d3.forceManyBody().strength(-300))
         .force("center", d3.forceCenter(parentWidth / 2, parentHeight / 2))
-        .force("collision", d3.forceCollide().radius(d => nodeSize(nodeConnections[d.id] || 0) + 10))
+        .force("collision", d3.forceCollide().radius(d => nodeSize(d.connections) + 10))
         .on("tick", ticked);
 
     function ticked() {
@@ -120,7 +102,7 @@ function createD3Graph(graph, parentWidth, parentHeight) {
     d3.select("#search").on("input", function() {
         const searchTerm = this.value.toLowerCase();
         if (searchTerm) {
-            highlightNodes(searchTerm, graph, nodes, links, labels);
+            highlightNodes(searchTerm, graph.nodes, nodes, links, labels);
         } else {
             resetGraph(nodes, links, labels);
         }
@@ -147,27 +129,31 @@ function createD3Graph(graph, parentWidth, parentHeight) {
         });
 }
 
-function highlightNodes(searchTerm, graph, nodes, links, labels) {
-    const matchedNodes = graph.nodes.filter(n => n.name.toLowerCase().includes(searchTerm));
+function highlightNodes(searchTerm, allNodes, nodes, links, labels) {
+    const matchedNodes = allNodes.filter(n => n.name.toLowerCase().includes(searchTerm));
     
     if (matchedNodes.length === 0) {
         resetGraph(nodes, links, labels);
         return;
     }
 
-    const connectedNodes = new Set();
-    matchedNodes.forEach(node => {
-        connectedNodes.add(node.id);
-        graph.links.forEach(link => {
-            if (link.source.id === node.id) connectedNodes.add(link.target.id);
-            if (link.target.id === node.id) connectedNodes.add(link.source.id);
-        });
+    const connectedNodes = new Set(matchedNodes.map(n => n.id));
+    const connectedLinks = new Set();
+
+    links.each(function(d) {
+        if (matchedNodes.some(n => n.id === d.source.id || n.id === d.target.id)) {
+            connectedNodes.add(d.source.id);
+            connectedNodes.add(d.target.id);
+            connectedLinks.add(d);
+        }
     });
 
-    nodes.attr("fill", d => connectedNodes.has(d.id) ? "#00FF00" : "#808080")
+    nodes.attr("fill", d => matchedNodes.some(n => n.id === d.id) ? "#00FF00" : (connectedNodes.has(d.id) ? "#FFA500" : "#808080"))
          .attr("opacity", d => connectedNodes.has(d.id) ? 1 : 0.1);
-    links.attr("stroke", d => connectedNodes.has(d.source.id) && connectedNodes.has(d.target.id) ? "#00FF00" : "#999")
-         .attr("opacity", d => connectedNodes.has(d.source.id) && connectedNodes.has(d.target.id) ? 1 : 0.1);
+
+    links.attr("stroke", d => connectedLinks.has(d) ? "#00FF00" : "#999")
+         .attr("opacity", d => connectedLinks.has(d) ? 1 : 0.1);
+
     labels.attr("opacity", d => connectedNodes.has(d.id) ? 1 : 0.1);
 }
 
@@ -179,23 +165,29 @@ function resetGraph(nodes, links, labels) {
     labels.attr("opacity", 1);
 }
 
-function setSelectedNode(node, allNodes, allLinks, labels) {
+function setSelectedNode(node) {
     if (selectedNode === node) return;
-    
+
     const connectedNodes = new Set([node.id]);
-    allLinks.each(function(d) {
-        if (d.source.id === node.id) connectedNodes.add(d.target.id);
-        if (d.target.id === node.id) connectedNodes.add(d.source.id);
+    const connectedLinks = new Set();
+
+    links.each(function(d) {
+        if (d.source.id === node.id || d.target.id === node.id) {
+            connectedNodes.add(d.source.id);
+            connectedNodes.add(d.target.id);
+            connectedLinks.add(d);
+        }
     });
 
-    allNodes.attr("fill", d => connectedNodes.has(d.id) ? "#00FF00" : "#ADD8E6")
-            .attr("opacity", d => connectedNodes.has(d.id) ? 1 : 0.1);
-    allLinks.attr("stroke", d => connectedNodes.has(d.source.id) && connectedNodes.has(d.target.id) ? "#00FF00" : "#999")
-            .attr("opacity", d => connectedNodes.has(d.source.id) && connectedNodes.has(d.target.id) ? 1 : 0.1);
+    nodes.attr("fill", d => d.id === node.id ? "#00FF00" : (connectedNodes.has(d.id) ? "#FFA500" : "#ADD8E6"))
+         .attr("opacity", d => connectedNodes.has(d.id) ? 1 : 0.1);
+
+    links.attr("stroke", d => connectedLinks.has(d) ? "#00FF00" : "#999")
+         .attr("opacity", d => connectedLinks.has(d) ? 1 : 0.1);
+
     labels.attr("opacity", d => connectedNodes.has(d.id) ? 1 : 0.1);
 
     selectedNode = node;
-
     console.log("Selected node:", node.name);
 }
 
@@ -223,9 +215,7 @@ function drag(simulation) {
         .on("end", dragended);
 }
 
-// Usage example:
+// Usage
 document.addEventListener("DOMContentLoaded", function() {
-    loadGraphData(function(graph) {
-        createD3Graph(graph, window.innerWidth, window.innerHeight);
-    });
+    loadGraphData('merged20240308.csv');
 });

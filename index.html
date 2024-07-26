@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Economic Relationships Visualizer</title>
+    <title>Economist Influence Graph</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
         body { margin: 0; overflow: hidden; }
@@ -14,12 +14,5 @@
     <input type="text" id="search" placeholder="Search economists...">
     <svg id="graph"></svg>
     <script src="graph.js"></script>
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            loadGraphData(function(graph) {
-                createD3Graph(graph, window.innerWidth, window.innerHeight);
-            });
-        });
-    </script>
 </body>
 </html>
