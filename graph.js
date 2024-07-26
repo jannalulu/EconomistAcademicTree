@@ -51,7 +51,7 @@ function createD3Graph(graph, parentWidth, parentHeight) {
         .selectAll("line")
         .data(graph.links)
         .join("line")
-        .attr("stroke", "#999")
+        .attr("stroke", "#A9A9A9")
         .attr("stroke-opacity", 0.6)
         .attr("stroke-width", 0.5);
 
@@ -61,7 +61,7 @@ function createD3Graph(graph, parentWidth, parentHeight) {
         .data(graph.nodes)
         .join("circle")
         .attr("r", d => nodeSize(d.connections))
-        .attr("fill", "#ADD8E6")  // Light blue color
+        .attr("fill", "#6495ED")
         .call(drag(simulation))
         .on("click", (event, d) => setSelectedNode(d));
 
@@ -123,12 +123,12 @@ function createD3Graph(graph, parentWidth, parentHeight) {
     // Add mouseover and mouseout events for nodes
     nodes
         .on("mouseover", function(event, d) {
-            d3.select(this).attr("fill", "#FF7F50");  // Change color on hover
+            d3.select(this).attr("fill", "#FFA07A");  // Change color on hover
             d3.select(this.parentNode).raise();  // Bring node to front
         })
         .on("mouseout", function(event, d) {
             if (selectedNode !== d) {
-                d3.select(this).attr("fill", "#ADD8E6");  // Revert color if not selected
+                d3.select(this).attr("fill", "#6495ED");  // Revert color if not selected
             }
         });
 }
@@ -152,10 +152,10 @@ function highlightNodes(searchTerm, allNodes, nodes, links, labels) {
         }
     });
 
-    nodes.attr("fill", d => matchedNodes.some(n => n.id === d.id) ? "#00FF00" : (connectedNodes.has(d.id) ? "#FFA500" : "#808080"))
+    nodes.attr("fill", d => matchedNodes.some(n => n.id === d.id) ? "#9370DB" : (connectedNodes.has(d.id) ? "#9370DB" : "#D3D3D3"))
          .attr("opacity", d => connectedNodes.has(d.id) ? 1 : 0.1);
 
-    links.attr("stroke", d => connectedLinks.has(d) ? "#00FF00" : "#999")
+    links.attr("stroke", d => connectedLinks.has(d) ? "#9370DB" : "#A9A9A9")
          .attr("opacity", d => connectedLinks.has(d) ? 1 : 0.1);
 
     labels.attr("opacity", d => connectedNodes.has(d.id) ? 1 : 0.1);
@@ -167,9 +167,9 @@ function highlightNodes(searchTerm, allNodes, nodes, links, labels) {
 }
 
 function resetGraph(nodes, links, labels) {
-    nodes.attr("fill", "#ADD8E6")
+    nodes.attr("fill", "#6495ED")
          .attr("opacity", 1);
-    links.attr("stroke", "#999")
+    links.attr("stroke", "#A9A9A9")
          .attr("opacity", 0.6);
     labels.attr("opacity", 1);
 }
@@ -188,10 +188,10 @@ function setSelectedNode(node) {
         }
     });
 
-    nodes.attr("fill", d => d.id === node.id ? "#00FF00" : (connectedNodes.has(d.id) ? "#FFA500" : "#ADD8E6"))
+    nodes.attr("fill", d => d.id === node.id ? "#9370DB" : (connectedNodes.has(d.id) ? "#9370DB" : "#6495ED"))
          .attr("opacity", d => connectedNodes.has(d.id) ? 1 : 0.1);
 
-    links.attr("stroke", d => connectedLinks.has(d) ? "#00FF00" : "#999")
+    links.attr("stroke", d => connectedLinks.has(d) ? "#9370DB" : "#A9A9A9")
          .attr("opacity", d => connectedLinks.has(d) ? 1 : 0.1);
 
     labels.attr("opacity", d => connectedNodes.has(d.id) ? 1 : 0.1);
