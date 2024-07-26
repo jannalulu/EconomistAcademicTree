@@ -114,10 +114,11 @@ function createD3Graph(graph, parentWidth, parentHeight) {
     // Add click event to reset graph when clicking on empty space
     svg.on("click", function(event) {
         if (event.target === this) {
+            d3.select("#search").property("value", "");
             resetGraph(nodes, links, labels);
             selectedNode = null;
-            resetZoom();
         }
+
     });
 
     // Add mouseover and mouseout events for nodes
@@ -204,18 +205,18 @@ function setSelectedNode(node) {
 }
 
 function zoomToNode(node) {
-    const scale = 2;
+    const scale = 1;
     const x = -node.x * scale + svg.attr("width") / 2;
     const y = -node.y * scale + svg.attr("height") / 2;
 
     svg.transition()
-        .duration(750)
+        .duration(500)
         .call(zoom.transform, d3.zoomIdentity.translate(x, y).scale(scale));
 }
 
-function resetZoom() {
+ function resetZoom() {
     svg.transition()
-        .duration(750)
+        .duration(500)
         .call(zoom.transform, d3.zoomIdentity);
 }
 
@@ -245,5 +246,5 @@ function drag(simulation) {
 
 // Usage
 document.addEventListener("DOMContentLoaded", function() {
-    loadGraphData('merged20240308.csv');
+    loadGraphData('merged20240726.csv');
 });
