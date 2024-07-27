@@ -1,4 +1,12 @@
-const d3 = window.d3;
+// Check if we're in a browser environment
+const isBrowser = typeof window !== 'undefined' && typeof window.document !== 'undefined';
+
+// Use window.d3 in browser, or require('d3') in Node.js
+const d3 = isBrowser ? window.d3 : require('d3');
+
+// Global color definitions
+const highlightColor = "#9370DB";
+const defaultColor = "#A9A9A9";
 
 let links = null;
 let nodes = null;
@@ -30,6 +38,38 @@ function createD3Graph(graph, parentWidth, parentHeight) {
     // Remove any previous graphs
     svg.selectAll('*').remove();
 
+    // Add arrow definitions
+    const defs = svg.append("defs");
+
+    // Default arrow
+    defs.append("marker")
+        .attr("id", "arrowhead-default")
+        .attr("viewBox", "-0 -5 10 10")
+        .attr("refX", 10)
+        .attr("refY", 0)
+        .attr("orient", "auto")
+        .attr("markerWidth", 12)
+        .attr("markerHeight", 12)
+        .attr("xoverflow", "visible")
+        .append("svg:path")
+        .attr("d", "M 0,-5 L 10 ,0 L 0,5")
+        .attr("fill", "#A9A9A9")
+        .attr("stroke", "none");
+    
+    defs.append("marker")
+        .attr("id", "arrowhead-highlight")
+        .attr("viewBox", "-0 -5 10 10")
+        .attr("refX", 10)
+        .attr("refY", 0)
+        .attr("orient", "auto")
+        .attr("markerWidth", 12)
+        .attr("markerHeight", 12)
+        .attr("xoverflow", "visible")
+        .append("svg:path")
+        .attr("d", "M 0,-5 L 10 ,0 L 0,5")
+        .attr("fill", "#9370DB")
+        .attr("stroke", "none");
+    
     g = svg.append('g');
 
     // Create zoom behavior
@@ -53,7 +93,8 @@ function createD3Graph(graph, parentWidth, parentHeight) {
         .join("line")
         .attr("stroke", "#A9A9A9")
         .attr("stroke-opacity", 0.6)
-        .attr("stroke-width", 0.5);
+        .attr("stroke-width", 0.5)
+        .attr("marker-end", "url(#arrowhead-default)");  // Add arrowhead
 
     // Create nodes
     nodes = g.append("g")
@@ -89,8 +130,20 @@ function createD3Graph(graph, parentWidth, parentHeight) {
         links
             .attr("x1", d => d.source.x)
             .attr("y1", d => d.source.y)
-            .attr("x2", d => d.target.x)
-            .attr("y2", d => d.target.y);
+            .attr("x2", d => {
+                const dx = d.target.x - d.source.x;
+                const dy = d.target.y - d.source.y;
+                const length = Math.sqrt(dx * dx + dy * dy);
+                const scale = (length - nodeSize(d.target.connections)) / length;
+                return d.source.x + dx * scale;
+            })
+            .attr("y2", d => {
+                const dx = d.target.x - d.source.x;
+                const dy = d.target.y - d.source.y;
+                const length = Math.sqrt(dx * dx + dy * dy);
+                const scale = (length - nodeSize(d.target.connections)) / length;
+                return d.source.y + dy * scale;
+            });
 
         nodes
             .attr("cx", d => d.x)
@@ -153,11 +206,12 @@ function highlightNodes(searchTerm, allNodes, nodes, links, labels) {
         }
     });
 
-    nodes.attr("fill", d => matchedNodes.some(n => n.id === d.id) ? "#9370DB" : (connectedNodes.has(d.id) ? "#9370DB" : "#D3D3D3"))
+    nodes.attr("fill", d => matchedNodes.some(n => n.id === d.id) ? highlightColor : (connectedNodes.has(d.id) ? highlightColor : "#D3D3D3"))
          .attr("opacity", d => connectedNodes.has(d.id) ? 1 : 0.1);
 
-    links.attr("stroke", d => connectedLinks.has(d) ? "#9370DB" : "#A9A9A9")
-         .attr("opacity", d => connectedLinks.has(d) ? 1 : 0.1);
+    links.attr("stroke", d => connectedLinks.has(d) ? highlightColor : defaultColor)
+         .attr("opacity", d => connectedLinks.has(d) ? 1 : 0.1)
+         .attr("marker-end", d => connectedLinks.has(d) ? "url(#arrowhead-highlight)" : "url(#arrowhead-default)");
 
     labels.attr("opacity", d => connectedNodes.has(d.id) ? 1 : 0.1);
 
@@ -165,14 +219,6 @@ function highlightNodes(searchTerm, allNodes, nodes, links, labels) {
     if (matchedNodes.length > 0) {
         zoomToNode(matchedNodes[0]);
     }
-}
-
-function resetGraph(nodes, links, labels) {
-    nodes.attr("fill", "#6495ED")
-         .attr("opacity", 1);
-    links.attr("stroke", "#A9A9A9")
-         .attr("opacity", 0.6);
-    labels.attr("opacity", 1);
 }
 
 function setSelectedNode(node) {
@@ -192,8 +238,9 @@ function setSelectedNode(node) {
     nodes.attr("fill", d => d.id === node.id ? "#9370DB" : (connectedNodes.has(d.id) ? "#9370DB" : "#6495ED"))
          .attr("opacity", d => connectedNodes.has(d.id) ? 1 : 0.1);
 
-    links.attr("stroke", d => connectedLinks.has(d) ? "#9370DB" : "#A9A9A9")
-         .attr("opacity", d => connectedLinks.has(d) ? 1 : 0.1);
+    links.attr("stroke", d => connectedLinks.has(d) ? highlightColor : defaultColor)
+         .attr("opacity", d => connectedLinks.has(d) ? 1 : 0.1)
+         .attr("marker-end", d => connectedLinks.has(d) ? "url(#arrowhead-highlight)" : "url(#arrowhead-default)");
 
     labels.attr("opacity", d => connectedNodes.has(d.id) ? 1 : 0.1);
 
@@ -202,6 +249,15 @@ function setSelectedNode(node) {
 
     // Zoom to the selected node
     zoomToNode(node);
+}
+
+function resetGraph(nodes, links, labels) {
+    nodes.attr("fill", "#6495ED")
+         .attr("opacity", 1);
+    links.attr("stroke", "#A9A9A9")
+         .attr("opacity", 0.6)
+         .attr("marker-end", "url(#arrowhead-default)");
+    labels.attr("opacity", 1);
 }
 
 function zoomToNode(node) {
@@ -245,6 +301,10 @@ function drag(simulation) {
 }
 
 // Usage
-document.addEventListener("DOMContentLoaded", function() {
-    loadGraphData('merged20240726.csv');
-});
+if (isBrowser) {
+    document.addEventListener("DOMContentLoaded", function() {
+        loadGraphData('merged20240726.csv');
+    });
+} else {
+    console.warn('This script is intended to run in a browser environment.');
+};

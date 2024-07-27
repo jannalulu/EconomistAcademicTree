@@ -1,4 +1,13 @@
-self.importScripts('https://d3js.org/d3.v7.min.js');
+const isWebWorker = typeof self !== 'undefined' && typeof self.importScripts === 'function';
+
+if (isWebWorker) {
+    self.importScripts('https://d3js.org/d3.v7.min.js');
+} else {
+    // In Node.js environment, we need to require d3
+    const d3 = require('d3');
+}
+
+// const CHUNK_SIZE = 1000; // Adjust this value based on performance testing
 
 self.onmessage = function(event) {
     if (event.data.type === 'loadData') {
