@@ -9,7 +9,6 @@ const highlightColor = "#9370DB";
 const defaultColor = "#A9A9A9";
 
 let links = null;
-let labels = null;
 let nodes = null;
 let simulation = null;
 let selectedNode = null;
@@ -19,19 +18,9 @@ let zoom = null;
 
 let worker = new Worker('dataworker.js');
 
-let accumulatedGraph = { nodes: [], links: [] };
-
 worker.onmessage = function(event) {
-    if (event.data.type === 'chunkData') {
-        // Accumulate the chunk data
-        accumulatedGraph.nodes = accumulatedGraph.nodes.concat(event.data.graph.nodes);
-        accumulatedGraph.links = accumulatedGraph.links.concat(event.data.graph.links);
-
-        // To-Do update a loading progress indicator here
-        console.log(`Received chunk ${event.data.chunkCount}`);
-    } else if (event.data.type === 'complete') {
-        // All chunks have been received, create the graph
-        createD3Graph(accumulatedGraph, window.innerWidth, window.innerHeight);
+    if (event.data.type === 'graphData') {
+        createD3Graph(event.data.graph, window.innerWidth, window.innerHeight);
     } else if (event.data.type === 'error') {
         console.error(event.data.message);
     }
@@ -94,8 +83,8 @@ function createD3Graph(graph, parentWidth, parentHeight) {
 
     // Calculate node sizes based on connections
     const nodeSize = d3.scaleLinear()
-    .domain([0, d3.max(graph.nodes, d => d.connections)])
-    .range([5, 20]);
+        .domain([0, d3.max(graph.nodes, d => d.connections)])
+        .range([5, 20]);
 
     // Create links
     links = g.append("g")
@@ -105,7 +94,7 @@ function createD3Graph(graph, parentWidth, parentHeight) {
         .attr("stroke", "#A9A9A9")
         .attr("stroke-opacity", 0.6)
         .attr("stroke-width", 0.5)
-        .attr("marker-end", "url(#arrowhead-default)");
+        .attr("marker-end", "url(#arrowhead-default)");  // Add arrowhead
 
     // Create nodes
     nodes = g.append("g")
@@ -118,7 +107,7 @@ function createD3Graph(graph, parentWidth, parentHeight) {
         .on("click", (event, d) => setSelectedNode(d));
 
     // Add labels to nodes
-    labels = g.append("g")
+    const labels = g.append("g")
         .selectAll("text")
         .data(graph.nodes)
         .join("text")
@@ -127,7 +116,7 @@ function createD3Graph(graph, parentWidth, parentHeight) {
         .attr("font-family", "Arial, Helvetica, sans-serif")
         .attr("dx", 12)
         .attr("dy", ".35em")
-        .attr("pointer-events", "none");
+        .attr("pointer-events", "none");  // Prevent labels from interfering with node interactions
 
     // Create simulation
     simulation = d3.forceSimulation(graph.nodes)
@@ -137,33 +126,31 @@ function createD3Graph(graph, parentWidth, parentHeight) {
         .force("collision", d3.forceCollide().radius(d => nodeSize(d.connections) + 10))
         .on("tick", ticked);
 
-    // Precalculate and store node radii
-    graph.nodes.forEach(node => {
-        node.radius = nodeSize(node.connections);
-    });
-
     function ticked() {
-        links.attr("x1", d => d.source.x)
+        links
+            .attr("x1", d => d.source.x)
             .attr("y1", d => d.source.y)
             .attr("x2", d => {
                 const dx = d.target.x - d.source.x;
                 const dy = d.target.y - d.source.y;
                 const length = Math.sqrt(dx * dx + dy * dy);
-                const scale = (length - d.target.radius) / length;
+                const scale = (length - nodeSize(d.target.connections)) / length;
                 return d.source.x + dx * scale;
             })
             .attr("y2", d => {
                 const dx = d.target.x - d.source.x;
                 const dy = d.target.y - d.source.y;
                 const length = Math.sqrt(dx * dx + dy * dy);
-                const scale = (length - d.target.radius) / length;
+                const scale = (length - nodeSize(d.target.connections)) / length;
                 return d.source.y + dy * scale;
             });
 
-        nodes.attr("cx", d => d.x)
+        nodes
+            .attr("cx", d => d.x)
             .attr("cy", d => d.y);
 
-        labels.attr("x", d => d.x + 8)
+        labels
+            .attr("x", d => d.x + 8)
             .attr("y", d => d.y);
     }
 

@@ -7,7 +7,7 @@ if (isWebWorker) {
     const d3 = require('d3');
 }
 
-const CHUNK_SIZE = 1000; // Adjust this value based on performance testing
+// const CHUNK_SIZE = 1000; // Adjust this value based on performance testing
 
 self.onmessage = function(event) {
     if (event.data.type === 'loadData') {
@@ -15,57 +15,34 @@ self.onmessage = function(event) {
     }
 };
 
-async function loadAndProcessData(url) {
-    try {
-        const response = await fetch(url);
-        const text = await response.text();
-        const data = d3.csvParse(text);
+function loadAndProcessData(url) {
+    d3.csv(url).then(function(data) {
+        const nodes = new Map();
+        const links = [];
 
-        let nodes = new Map();
-        let links = [];
-        let rowCount = 0;
-        let chunkCount = 0;
+        data.forEach(function(row) {
+            addNode(nodes, row.influencedBy);
+            addNode(nodes, row.economist);
+            links.push({
+                source: row.influencedBy,
+                target: row.economist
+            });
+        });
 
-        for (let row of data) {
-            const influencedBy = row.influencedBy;
-            const economist = row.economist;
+        links.forEach(link => {
+            nodes.get(link.source).connections++;
+            nodes.get(link.target).connections++;
+        });
 
-            addNode(nodes, influencedBy);
-            addNode(nodes, economist);
-            links.push({ source: influencedBy, target: economist });
+        const graph = {
+            nodes: Array.from(nodes.values()),
+            links: links
+        };
 
-            rowCount++;
-            if (rowCount % CHUNK_SIZE === 0) {
-                await processChunk(nodes, links, chunkCount);
-                chunkCount++;
-                links = [];
-            }
-        }
-
-        // Process any remaining data
-        if (links.length > 0) {
-            await processChunk(nodes, links, chunkCount);
-        }
-
-        // Send final message indicating processing is complete
-        self.postMessage({ type: 'complete' });
-    } catch (error) {
-        self.postMessage({ type: 'error', message: "Error processing the CSV file: " + error.message });
-    }
-}
-
-async function processChunk(nodes, links, chunkCount) {
-    links.forEach(link => {
-        nodes.get(link.source).connections++;
-        nodes.get(link.target).connections++;
+        self.postMessage({ type: 'graphData', graph: graph });
+    }).catch(function(error) {
+        self.postMessage({ type: 'error', message: "Error loading the CSV file: " + error.message });
     });
-
-    const chunkGraph = {
-        nodes: Array.from(nodes.values()),
-        links: links
-    };
-
-    self.postMessage({ type: 'chunkData', chunkCount: chunkCount, graph: chunkGraph });
 }
 
 function addNode(nodes, id) {
