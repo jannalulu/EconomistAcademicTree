@@ -155,7 +155,7 @@ function drawLink(d) {
     ctx.lineTo(touchX, touchY);
     ctx.strokeStyle = d.highlighted ? highlightColor : linkColor;
     ctx.globalAlpha = d.opacity;
-    ctx.lineWidth = 0.5 / transform.k;
+    ctx.lineWidth = 0.25 / transform.k;
     ctx.stroke();
 
     // Draw the arrow
