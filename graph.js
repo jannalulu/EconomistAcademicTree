@@ -67,7 +67,12 @@ function createD3Graph(graph, parentWidth, parentHeight) {
         .force("charge", d3.forceManyBody().strength(-250))
         .force("center", d3.forceCenter(parentWidth / 2, parentHeight / 2))
         .force("collision", d3.forceCollide().radius(d => d.r + 50))
+        .alphaDecay(0.05)
+        .alphaMin(0.001)
+        .velocityDecay(0.2)
         .on("tick", ticked);
+
+    simulation.tick(12);
 
     // Set up zoom behavior
     const zoom = d3.zoom()
