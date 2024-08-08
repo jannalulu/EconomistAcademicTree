@@ -1,8 +1,4 @@
-// Check if we're in a browser environment
-const isBrowser = typeof window !== 'undefined' && typeof window.document !== 'undefined';
-
-// Use window.d3 in browser, or require('d3') in Node.js
-const d3 = isBrowser ? window.d3 : require('d3');
+const d3 = window.d3;
 
 // Global color definitions
 const defaultNodeColor = "#6495ED";  // Cornflower Blue
@@ -25,13 +21,24 @@ let worker = new Worker('dataworker.js');
 worker.onmessage = function(event) {
     if (event.data.type === 'graphData') {
         createD3Graph(event.data.graph, window.innerWidth, window.innerHeight);
+        hideLoadingOverlay();
     } else if (event.data.type === 'error') {
         console.error(event.data.message);
+        hideLoadingOverlay();
     }
 };
 
 function loadGraphData(url) {
+    showLoadingOverlay();
     worker.postMessage({ type: 'loadData', url: url });
+}
+
+function showLoadingOverlay() {
+    document.getElementById('loading-overlay').style.display = 'flex';
+}
+
+function hideLoadingOverlay() {
+    document.getElementById('loading-overlay').style.display = 'none';
 }
 
 function createD3Graph(graph, parentWidth, parentHeight) {
@@ -67,12 +74,12 @@ function createD3Graph(graph, parentWidth, parentHeight) {
         .force("charge", d3.forceManyBody().strength(-250))
         .force("center", d3.forceCenter(parentWidth / 2, parentHeight / 2))
         .force("collision", d3.forceCollide().radius(d => d.r + 50))
-        .alphaDecay(0.05)
-        .alphaMin(0.001)
-        .velocityDecay(0.2)
+        //.alphaDecay(0.05)
+        //.alphaMin(0.001)
+        .velocityDecay(0.25)
         .on("tick", ticked);
 
-    simulation.tick(12);
+    simulation.tick(75);
 
     // Set up zoom behavior
     const zoom = d3.zoom()
@@ -311,10 +318,6 @@ function findNodeAtPosition(x, y) {
 }
 
 // Usage
-if (isBrowser) {
-    document.addEventListener("DOMContentLoaded", function() {
-        loadGraphData('merged20240726.csv');
-    });
-} else {
-    console.warn('This script is intended to run in a browser environment.');
-}
+document.addEventListener("DOMContentLoaded", function() {
+    loadGraphData('merged20240726.csv');
+});
