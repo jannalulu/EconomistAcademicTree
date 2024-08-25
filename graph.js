@@ -79,7 +79,7 @@ function createD3Graph(graph, parentWidth, parentHeight) {
         .velocityDecay(0.25)
         .on("tick", ticked);
 
-    simulation.tick(75);
+    simulation.tick(150);
 
     // Set up zoom behavior
     const zoom = d3.zoom()
@@ -98,6 +98,7 @@ function createD3Graph(graph, parentWidth, parentHeight) {
             highlightNodes(searchTerm);
         } else {
             resetGraph();
+            hideSearchResults();
         }
     });
 
@@ -171,7 +172,31 @@ function highlightNodes(searchTerm) {
         zoomToNode(matchedNodes[currentMatchIndex]);
     }
 
+    // Update search results list
+    updateSearchResults(matchedNodes);
+
     ticked();
+}
+
+function updateSearchResults(matchedNodes) {
+    const searchResults = d3.select("#search-results");
+    searchResults.style("display", "block");
+    searchResults.html("");
+    
+    matchedNodes.forEach(node => {
+        searchResults.append("div")
+            .text(node.name)
+            .on("click", () => {
+                setSelectedNode(node);
+                zoomToNode(node);
+            });
+    });
+}
+
+function hideSearchResults() {
+    const searchResults = d3.select("#search-results");
+    searchResults.style("display", "none");
+    searchResults.html("");
 }
 
 function ticked() {
@@ -309,6 +334,7 @@ function resetGraph() {
     });
 
     selectedNode = null;
+    hideSearchResults();
     ticked();
 }
 
