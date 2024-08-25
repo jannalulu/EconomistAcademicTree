@@ -33,6 +33,8 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        #search { position: absolute; top: 10px; left: 10px; z-index: 1; }
+        #cycleButton { position: absolute; top: 10px; left: 200px; z-index: 1; }
     </style>
 </head>
 <body>
@@ -40,6 +42,7 @@
         <div class="loading-spinner"></div>
     </div>
     <input type="text" id="search" placeholder="Search economists...">
+    <button id="cycleButton" onclick="cycleMatches()">Next</button>
     <canvas id="graph"></canvas>
     <script src="graph.js"></script>
 </body>

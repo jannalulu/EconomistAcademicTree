@@ -93,6 +93,7 @@ function createD3Graph(graph, parentWidth, parentHeight) {
     // Add search functionality
     d3.select("#search").on("input", function() {
         const searchTerm = this.value.toLowerCase();
+        currentMatchIndex = 0; // Reset the index when searching
         if (searchTerm) {
             highlightNodes(searchTerm);
         } else {
@@ -122,6 +123,55 @@ function createD3Graph(graph, parentWidth, parentHeight) {
         hoveredNode = node;
         ticked();
     });
+}
+
+let currentMatchIndex = 0;
+let matchedNodes = [];
+let lastSearchTerm = '';
+
+function cycleMatches() {
+    if (matchedNodes && matchedNodes.length > 1) {
+        currentMatchIndex = (currentMatchIndex + 1) % matchedNodes.length;
+        highlightNodes(lastSearchTerm);
+    }
+}
+
+function highlightNodes(searchTerm) {
+    lastSearchTerm = searchTerm;
+    matchedNodes = nodes.filter(n => n.name.toLowerCase().includes(searchTerm));
+
+    if (matchedNodes.length === 0) {
+        resetGraph();
+        return;
+    }
+
+    const connectedNodes = new Set(matchedNodes.map(n => n.id));
+    const connectedLinks = new Set();
+
+    links.forEach(d => {
+        if (matchedNodes.some(n => n.id === d.source.id || n.id === d.target.id)) {
+            connectedNodes.add(d.source.id);
+            connectedNodes.add(d.target.id);
+            connectedLinks.add(d);
+        }
+    });
+
+    nodes.forEach(d => {
+        d.highlighted = matchedNodes.some(n => n.id === d.id) || connectedNodes.has(d.id);
+        d.opacity = d.highlighted ? 1 : 0.1;
+    });
+
+    links.forEach(d => {
+        d.highlighted = connectedLinks.has(d);
+        d.opacity = d.highlighted ? 1 : 0.1;
+    });
+
+    // Zoom to the current matched node
+    if (matchedNodes.length > 0) {
+        zoomToNode(matchedNodes[currentMatchIndex]);
+    }
+
+    ticked();
 }
 
 function ticked() {
@@ -211,43 +261,6 @@ function drawLabel(d) {
 
 function zoomed(event) {
     transform = event.transform;
-    ticked();
-}
-
-function highlightNodes(searchTerm) {
-    const matchedNodes = nodes.filter(n => n.name.toLowerCase().includes(searchTerm));
-
-    if (matchedNodes.length === 0) {
-        resetGraph();
-        return;
-    }
-
-    const connectedNodes = new Set(matchedNodes.map(n => n.id));
-    const connectedLinks = new Set();
-
-    links.forEach(d => {
-        if (matchedNodes.some(n => n.id === d.source.id || n.id === d.target.id)) {
-            connectedNodes.add(d.source.id);
-            connectedNodes.add(d.target.id);
-            connectedLinks.add(d);
-        }
-    });
-
-    nodes.forEach(d => {
-        d.highlighted = matchedNodes.some(n => n.id === d.id) || connectedNodes.has(d.id);
-        d.opacity = d.highlighted ? 1 : 0.1;
-    });
-
-    links.forEach(d => {
-        d.highlighted = connectedLinks.has(d);
-        d.opacity = d.highlighted ? 1 : 0.1;
-    });
-
-    // Zoom to the first matched node
-    if (matchedNodes.length > 0) {
-        zoomToNode(matchedNodes[0]);
-    }
-
     ticked();
 }
 
