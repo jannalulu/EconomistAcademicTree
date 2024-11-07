@@ -1,0 +1,23 @@
+Create a program that uses link data from Wikipedia about on economists and represent in a network graph/tree of who they influenced.
+
+Steps:
+    1. Get data from Wikipedia API
+    2. Turn it into a CSV
+    3. Create relationship linkages
+    4. create visualizations
+
+
+https://dbpedia.org/sparql
+Who an economist influenced:
+    SELECT ?economist ?influenced
+    WHERE {
+    ?economist a <http://dbpedia.org/ontology/Economist>.
+    ?economist <http://dbpedia.org/ontology/influenced> ?influenced.
+    }
+
+Who influenced an economist:
+    SELECT ?economist ?influencedBy
+    WHERE {
+    ?economist a <http://dbpedia.org/ontology/Economist>.
+    ?economist <http://dbpedia.org/ontology/influencedBy> ?influencedBy.
+    }

@@ -356,7 +356,6 @@ function findNodeAtPosition(x, y) {
     });
 }
 
-// Usage
 document.addEventListener("DOMContentLoaded", function() {
     loadGraphData('merged20240726.csv');
 });
