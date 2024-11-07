@@ -519,9 +519,9 @@ James_Meade,Jacques_Parizeau
 James_Meade,Anthony_Barnes_Atkinson
 James_Mirrlees,Joseph_Stiglitz
 James_Mirrlees,Ivan_Werning
-Jean-Baptiste_Say,Frederic_Bastiat
-Jean-Baptiste_Say,Thomas_Hodgskin
-Jean-Baptiste_Say,Auguste_Comte
+Jean_Baptiste_Say,Frederic_Bastiat
+Jean_Baptiste_Say,Thomas_Hodgskin
+Jean_Baptiste_Say,Auguste_Comte
 Jean-Jacques_Laffont,Jean_Tirole
 Jean_de_Sismondi,Benjamin_Constant
 Jean_de_Sismondi,Charles_Dunoyer
@@ -628,7 +628,7 @@ Kozo_Uno,Makoto_Itoh
 Kozo_Uno,Thomas_T._Sekine
 Michael_J._Piore,Gilles_Saint-Paul
 Michael_James_Farrell,Tony_Lancaster
-Michael_James_Farrell,Joseph_E._Stiglitz
+Michael_James_Farrell,Joseph_Stiglitz
 Michal_Kalecki,Robin_Hahnel
 Michal_Kalecki,Richard_M._Goodwin
 Michal_Kalecki,Bill_Mitchell
@@ -784,7 +784,7 @@ Paul_Milgrom,Jonathan_Levin
 Jonathan_Gruber,Jonathan_Zinman
 John_Maynard_Keynes,Josef_Steindl
 Frederic_Bastiat,Joseph_Schumpeter
-Murray_Rothbard,Joseph_T._Salerno
+Murray_Rothbard,Joseph_Salerno
 William_A._Brock,Jose_Scheinkman
 Lionel_McKenzie,Jose_Scheinkman
 Daniel_Cohen,Julia_Cage
@@ -820,7 +820,7 @@ Murray_Rothbard,Peter_Boettke
 Ludwig_von_Mises,Peter_Boettke
 Israel_Kirzner,Peter_Boettke
 James_M._Buchanan,Peter_Boettke
-Jean-Baptiste_Say,Peter_Boettke
+Jean_Baptiste_Say,Peter_Boettke
 Kenneth_E._Boulding,Peter_Boettke
 John_Maynard_Keynes,Peter_Bofinger
 Karl_Schiller,Peter_Bofinger
@@ -882,7 +882,7 @@ Gustave_de_Molinari,Vilfredo_Pareto
 David_Hume,Vilfredo_Pareto
 Herbert_Spencer,Vilfredo_Pareto
 Maffeo_Pantaleoni,Vilfredo_Pareto
-J._de_Maistre,Vilfredo_Pareto
+Joseph_de_Maistre,Vilfredo_Pareto
 Edmund_Burke,Vilfredo_Pareto
 G._Sorel,Vilfredo_Pareto
 Auguste_Comte,Vilfredo_Pareto
@@ -1100,7 +1100,7 @@ Voltaire,Thomas_Robert_Malthus
 Edward_Gibbon,Thomas_Robert_Malthus
 William_Godwin,Thomas_Robert_Malthus
 Adam_Smith,Thomas_Robert_Malthus
-Jean-Jaques_Rousseau,Thomas_Robert_Malthus
+Jean-Jacques_Rousseau,Thomas_Robert_Malthus
 Carl_von_Clausewitz,Thomas_Schelling
 Niccolo_Machiavelli,Thomas_Schelling
 Edward_Bellamy,Thorstein_Veblen
@@ -1120,7 +1120,7 @@ Matthew_Rabin,David_Laibson
 Henry_Dunning_Macleod,John_R._Commons
 Max_Weber,Ludwig_von_Mises
 Edmund_Husserl,Ludwig_von_Mises
-Jean-Baptiste_Say,Ludwig_von_Mises
+Jean_Baptiste_Say,Ludwig_von_Mises
 Immanuel_Kant,Ludwig_von_Mises
 Walter_Eucken,Andreas_Freytag
 Eugen_von_Bohm-Bawerk,Andreas_Freytag
@@ -1281,7 +1281,7 @@ Michel_De_Montaigne,C._H._Douglas
 John_Henry_Newman,C._H._Douglas
 John_Maynard_Keynes,C._H._Douglas
 Karl_Marx,C._H._Douglas
-Joseph_De_Maistre,C._H._Douglas
+Joseph_de_Maistre,C._H._Douglas
 John_Maynard_Keynes,Celso_Furtado
 Raul_Prebisch,Celso_Furtado
 Amartya_Sen,Tim_Besley
@@ -1343,7 +1343,7 @@ James_Samuel_Coleman,Lawton_Burns
 Frank_Knight,Aaron_Director
 Paul_Samuelson,Abba_P._Lerner
 John_Maynard_Keynes,Abba_P._Lerner
-Jean-Baptiste_Say,Adam_Heydel
+Jean_Baptiste_Say,Adam_Heydel
 Gustav_Hugo,Adam_Muller
 A._H._L._Heeren,Adam_Muller
 A._L._von_Schlozer,Adam_Muller
@@ -1585,9 +1585,9 @@ Richard_Layard,Jan-Emmanuel_De_Neve
 John_Kenneth_Galbraith,Jan-Emmanuel_De_Neve
 William_C._Dudley,Jan_Hatzius
 Arthur_Goldberger,Jan_Kmenta
-Richard_Cantillon,Jean-Baptiste_Say
-Adam_Smith,Jean-Baptiste_Say
-Pietro_Verri,Jean-Baptiste_Say
+Richard_Cantillon,Jean_Baptiste_Say
+Adam_Smith,Jean_Baptiste_Say
+Pietro_Verri,Jean_Baptiste_Say
 Ricardo_Hausmann,Jean-Louis_Arcand
 Amartya_Sen,Jean-Louis_Arcand
 James_Heckman,Jean-Louis_Arcand
@@ -1646,7 +1646,7 @@ Leon_Walras,John_Hicks
 John_Maynard_Keynes,John_Hicks
 Robert_Fogel,John_Komlos
 Peter_C.B._Phillips,Jun_Yu
-Rothbard,Jorg_Guido_Hulsmann
+Murray_Rothbard,Jorg_Guido_Hulsmann
 H.H._Hoppe,Jorg_Guido_Hulsmann
 Aquinas,Jorg_Guido_Hulsmann
 Adolf_Reinach,Jorg_Guido_Hulsmann
